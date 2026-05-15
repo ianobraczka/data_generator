@@ -13,9 +13,12 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 from openai import OpenAI
 
 from data_generator.fields import SUPPORTED_FIELD_TYPES, validate_schema
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
 
 DEFAULT_MODEL = "gpt-4o-mini"
 

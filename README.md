@@ -24,13 +24,7 @@ This is a **developer productivity** feature: the model drafts a **schema only**
 
 **Why schemas, not rows?** Letting the model emit raw data would be harder to test, less predictable, and riskier. Here the model proposes structure; your generator fills values under the same rules as hand-written YAML.
 
-**Setup:** set your API key (never commit it). Copy `.env.example` to `.env` for local reference, or export in the shell:
-
-```bash
-export OPENAI_API_KEY="your-api-key"
-# optional default model when --model is omitted:
-# export OPENAI_MODEL="gpt-4o-mini"
-```
+**Setup:** put `OPENAI_API_KEY` in a project-root `.env` file (copy from `.env.example`) — it is **gitignored** and loaded automatically via **python-dotenv** when the package imports the AI module. Alternatively, `export OPENAI_API_KEY=...` in your shell (that overrides `.env` if both are set).
 
 **Step 1 — ask the model for a schema:**
 
