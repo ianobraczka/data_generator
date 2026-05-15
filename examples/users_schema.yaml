@@ -1,0 +1,21 @@
+fields:
+  name:
+    type: name
+  age:
+    type: int
+    min: 18
+    max: 80
+  email:
+    type: email
+  city:
+    type: choice
+    values:
+      - Rio de Janeiro
+      - São Paulo
+      - Curitiba
+  subscription:
+    type: weighted_choice
+    values: [free, pro, enterprise]
+    weights: [0.7, 0.25, 0.05]
+  active:
+    type: boolean

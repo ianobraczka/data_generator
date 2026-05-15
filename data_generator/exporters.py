@@ -15,3 +15,13 @@ def to_csv(df: pd.DataFrame, path: str | Path) -> None:
 def to_json(df: pd.DataFrame, path: str | Path, *, orient: str = "records") -> None:
     """Write ``df`` to JSON (default: list of row records)."""
     df.to_json(path, orient=orient, indent=2, force_ascii=False)
+
+
+def to_parquet(df: pd.DataFrame, path: str | Path) -> None:
+    """Write ``df`` to Parquet (requires ``pyarrow`` or ``fastparquet``)."""
+    df.to_parquet(path, index=False)
+
+
+def to_parquet(df: pd.DataFrame, path: str | Path) -> None:
+    """Write ``df`` to Parquet (requires ``pyarrow`` or ``fastparquet``)."""
+    df.to_parquet(path, index=False)
