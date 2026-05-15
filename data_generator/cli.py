@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 
+from data_generator.ai_schema import AISchemaError, generate_schema_from_prompt, save_schema_yaml
 from data_generator.exporters import to_csv, to_json, to_parquet
 from data_generator.generator import generate_dataset
 
@@ -53,6 +54,18 @@ def build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--schema", type=Path, required=True, help="Path to YAML schema file")
     gen.add_argument("--output", type=Path, required=True, help="Output file (.csv, .json, .parquet)")
     gen.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
+
+    ai = sub.add_parser(
+        "ai-schema",
+        help="Generate a YAML schema from a natural language prompt (OpenAI; schema only, no rows)",
+    )
+    ai.add_argument("--prompt", required=True, help="Description of the dataset columns you want")
+    ai.add_argument("--output", type=Path, required=True, help="Where to write the YAML schema file")
+    ai.add_argument(
+        "--model",
+        default=None,
+        help="OpenAI model id (default: OPENAI_MODEL env or gpt-4o-mini)",
+    )
     return p
 
 
@@ -69,6 +82,20 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(f"Wrote {len(df)} rows, {len(df.columns)} columns -> {args.output}")
         return 0
+
+    if args.command == "ai-schema":
+        try:
+            schema = generate_schema_from_prompt(args.prompt, model=args.model)
+            save_schema_yaml(schema, args.output)
+        except AISchemaError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        except OSError as exc:
+            print(f"Error: could not write output file: {exc}", file=sys.stderr)
+            return 1
+        print(f"Wrote schema ({len(schema)} columns) -> {args.output}")
+        return 0
+
     return 0
 
 

@@ -2,7 +2,7 @@
 
 Generate synthetic pandas datasets from simple Python or YAML schemas, with support for weighted choices, reproducible seeds, and CSV/JSON export.
 
-This is a small, educational project: plain functions, minimal dependencies, and no heavy framework beyond pandas, NumPy, Faker, and PyYAML.
+This is a small, educational project: plain functions, minimal dependencies, and no heavy framework beyond pandas, NumPy, Faker, PyYAML, and the OpenAI Python client (for the optional AI schema helper).
 
 ## Installation
 
@@ -16,6 +16,51 @@ For tests:
 
 ```bash
 pip install -r requirements-dev.txt
+```
+
+## AI-assisted schema generation
+
+This is a **developer productivity** feature: the model drafts a **schema only**. Dataset generation stays **deterministic**, **validated**, and **reproducible** via `generate_dataset` and the existing field types — AI assists with schema creation; rows are still produced only by the generator.
+
+**Why schemas, not rows?** Letting the model emit raw data would be harder to test, less predictable, and riskier. Here the model proposes structure; your generator fills values under the same rules as hand-written YAML.
+
+**Setup:** set your API key (never commit it). Copy `.env.example` to `.env` for local reference, or export in the shell:
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+# optional default model when --model is omitted:
+# export OPENAI_MODEL="gpt-4o-mini"
+```
+
+**Step 1 — ask the model for a schema:**
+
+```bash
+python -m data_generator ai-schema \
+  --prompt "Create a dataset for SaaS customers with name, email, plan, signup date, monthly revenue and churn risk" \
+  --output examples/saas_customers.yaml
+```
+
+Optional: `--model gpt-4o-mini` (overrides `OPENAI_MODEL` / built-in default).
+
+**Step 2 — generate rows with the normal pipeline:**
+
+```bash
+python -m data_generator generate \
+  --rows 1000 \
+  --schema examples/saas_customers.yaml \
+  --output customers.csv \
+  --seed 42
+```
+
+**Supported field types** for AI output are the same as the rest of the tool: `int`, `float`, `choice`, `weighted_choice`, `name`, `email`, `boolean`, `date`. After parsing, the schema is run through `validate_schema`; unsupported types or bad constraints surface as clear errors.
+
+In Python:
+
+```python
+from data_generator import generate_schema_from_prompt, save_schema_yaml
+
+schema = generate_schema_from_prompt("E-commerce orders with id, buyer email, status, total amount")
+save_schema_yaml(schema, "examples/orders.yaml")
 ```
 
 ## Python usage
@@ -74,6 +119,8 @@ fields:
 python -m data_generator generate --rows 1000 --schema examples/users_schema.yaml --output users.csv --seed 42
 ```
 
+Use `python -m data_generator ai-schema --help` for the OpenAI-powered schema helper (see **AI-assisted schema generation** above).
+
 The output format is chosen from the file extension: `.csv`, `.json`, or `.parquet`. Parquet needs an extra engine such as `pyarrow` (`pip install pyarrow`).
 
 ## Supported field types
@@ -97,6 +144,6 @@ pytest
 
 ## Project layout
 
-- `data_generator/` — package: distributions, field validation, `generate_dataset`, exporters, CLI.
+- `data_generator/` — package: distributions, field validation, `generate_dataset`, AI schema helper (`ai_schema.py`), exporters, CLI.
 - `examples/` — YAML schema and demo notebook.
-- `tests/` — pytest coverage for generation, validation, and exports.
+- `tests/` — pytest coverage for generation, validation, exports, and AI schema (mocked).
