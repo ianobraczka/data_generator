@@ -18,7 +18,9 @@ from openai import OpenAI
 
 from data_generator.fields import SUPPORTED_FIELD_TYPES, validate_schema
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
+# Load `.env` from the process working directory (walks up parent dirs). After clone, run
+# `./scripts/init-local-env.sh` once from the repo root, then edit `.env`.
+load_dotenv(override=False)
 
 DEFAULT_MODEL = "gpt-4o-mini"
 

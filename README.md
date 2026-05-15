@@ -4,19 +4,26 @@ Generate synthetic pandas datasets from simple Python or YAML schemas, with supp
 
 This is an educational project: plain functions, minimal dependencies, and no heavy framework beyond pandas, NumPy, Faker, PyYAML, and the OpenAI Python client (for the optional AI schema helper).
 
-## Installation
+## Clone and local setup
 
-From the project root (prefer a virtual environment):
+1. **Clone** the repository and enter its root (the directory that contains `requirements.txt` and the `data_generator/` package folder).
 
-```bash
-pip install -r requirements.txt
-```
+2. **Create your personal `.env`** (this file is **gitignored**; it never ships with the clone):
 
-For tests:
+   ```bash
+   ./scripts/init-local-env.sh
+   ```
 
-```bash
-pip install -r requirements-dev.txt
-```
+   Then open **`.env`** and set **`OPENAI_API_KEY`** (and optionally **`OPENAI_MODEL`**). On Windows without `sh`, copy manually: `cp .env.example .env` (Git Bash / WSL) or duplicate `.env.example` as `.env` in Explorer and edit.
+
+3. **Install dependencies** (virtual environment recommended):
+
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt   # optional: for pytest
+   ```
+
+4. **Run the CLI from the repo root** (or from any subdirectory of the repo). **python-dotenv** searches upward from the current working directory for a `.env` file, so keeping the file at the repo root matches a normal `git clone` workflow.
 
 ## AI-assisted schema generation
 
@@ -24,7 +31,7 @@ This is a **developer productivity** feature: the model drafts a **schema only**
 
 **Why schemas, not rows?** Letting the model emit raw data would be harder to test, less predictable, and riskier. Here the model proposes structure; your generator fills values under the same rules as hand-written YAML.
 
-**Setup:** put `OPENAI_API_KEY` in a project-root `.env` file (copy from `.env.example`) — it is **gitignored** and loaded automatically via **python-dotenv** when the package imports the AI module. Alternatively, `export OPENAI_API_KEY=...` in your shell (that overrides `.env` if both are set).
+**Setup:** follow **Clone and local setup** to create `.env` with `OPENAI_API_KEY`. You can also `export OPENAI_API_KEY=...` in your shell (environment variables override values from `.env`).
 
 **Step 1 — ask the model for a schema:**
 
@@ -139,5 +146,6 @@ pytest
 ## Project layout
 
 - `data_generator/` — package: distributions, field validation, `generate_dataset`, AI schema helper (`ai_schema.py`), exporters, CLI.
+- `scripts/` — `init-local-env.sh` copies `.env.example` → `.env` for new clones.
 - `examples/` — YAML schema and demo notebook.
 - `tests/` — pytest coverage for generation, validation, exports, and AI schema (mocked).
