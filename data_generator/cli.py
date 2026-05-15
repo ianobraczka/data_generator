@@ -57,14 +57,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     ai = sub.add_parser(
         "ai-schema",
-        help="Generate a YAML schema from a natural language prompt (OpenAI; schema only, no rows)",
+        help="Generate a YAML schema from a natural language prompt (LLM proposes schema only; rows come from generate)",
     )
     ai.add_argument("--prompt", required=True, help="Description of the dataset columns you want")
     ai.add_argument("--output", type=Path, required=True, help="Where to write the YAML schema file")
     ai.add_argument(
+        "--provider",
+        choices=["gemini", "openai"],
+        default="gemini",
+        help="LLM backend (default: gemini; uses GEMINI_API_KEY unless openai)",
+    )
+    ai.add_argument(
         "--model",
         default=None,
-        help="OpenAI model id (default: OPENAI_MODEL env or gpt-4o-mini)",
+        help="Model id for the provider (defaults: GEMINI_MODEL / OPENAI_MODEL env or built-in defaults)",
     )
     return p
 
@@ -85,15 +91,19 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "ai-schema":
         try:
-            schema = generate_schema_from_prompt(args.prompt, model=args.model)
+            schema = generate_schema_from_prompt(
+                args.prompt,
+                provider=args.provider,
+                model=args.model,
+            )
             save_schema_yaml(schema, args.output)
-        except AISchemaError as exc:
+        except (AISchemaError, ValueError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
         except OSError as exc:
             print(f"Error: could not write output file: {exc}", file=sys.stderr)
             return 1
-        print(f"Wrote schema ({len(schema)} columns) -> {args.output}")
+        print(f"Wrote schema ({len(schema)} columns, provider={args.provider}) -> {args.output}")
         return 0
 
     return 0

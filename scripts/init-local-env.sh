@@ -12,12 +12,13 @@ fi
 
 if [ -f "$TARGET" ]; then
   echo "init-local-env: ${TARGET} already exists — not overwriting."
-  echo "  Edit that file to set OPENAI_API_KEY, or delete it and run this script again."
+  echo "  Edit that file to set GEMINI_API_KEY and/or OPENAI_API_KEY, or delete it and run this script again."
   exit 0
 fi
 
 cp "$EXAMPLE" "$TARGET"
 echo "init-local-env: created ${TARGET}"
-echo "  Open it and set OPENAI_API_KEY (and optionally OPENAI_MODEL), then install deps:"
-echo "    pip install -r requirements.txt"
+echo "  Open it and set GEMINI_API_KEY (default provider) and/or OPENAI_API_KEY."
+echo "  For AI schema commands, also install: pip install -r requirements-ai.txt"
+echo "  Then: pip install -r requirements.txt"
 echo "  Run CLI from the repo root (or any cwd under it) so python-dotenv can find .env."

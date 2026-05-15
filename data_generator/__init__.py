@@ -5,6 +5,7 @@ weighted choices, names, emails, booleans, and dates.
 This package replaces the ad-hoc Colab script with importable, testable modules.
 """
 
+from data_generator.ai_providers import ProviderError, get_provider
 from data_generator.ai_schema import AISchemaError, generate_schema_from_prompt, save_schema_yaml
 from data_generator.distributions import (
     constant_column,
@@ -19,7 +20,9 @@ from data_generator.generator import generate_dataset, legacy_sample_frame
 
 __all__ = [
     "AISchemaError",
+    "ProviderError",
     "SUPPORTED_FIELD_TYPES",
+    "get_provider",
     "constant_column",
     "generate_dataset",
     "generate_schema_from_prompt",
@@ -33,4 +36,4 @@ __all__ = [
     "validate_field_spec",
     "validate_schema",
 ]
-__version__ = "0.4.0"
+__version__ = "0.5.0"

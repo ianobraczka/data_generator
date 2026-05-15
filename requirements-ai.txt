@@ -1,0 +1,6 @@
+# Optional: AI-assisted schema generation (Gemini + OpenAI).
+# Install with: pip install -r requirements-ai.txt
+
+google-generativeai>=0.8.0
+openai>=1.0,<1.28
+httpx>=0.23,<0.28

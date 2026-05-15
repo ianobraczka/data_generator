@@ -1,5 +1,5 @@
 """
-AI-assisted generation of dataset schemas (YAML-shaped dicts) via the OpenAI API.
+AI-assisted generation of dataset schemas (YAML-shaped dicts) via pluggable LLM providers.
 
 The model only proposes a schema; ``generate_dataset`` still produces rows deterministically.
 """
@@ -7,22 +7,19 @@ The model only proposes a schema; ``generate_dataset`` still produces rows deter
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 from typing import Any
 
 import yaml
 from dotenv import load_dotenv
-from openai import OpenAI
 
+from data_generator.ai_providers import AIProvider, ProviderError, get_provider
 from data_generator.fields import SUPPORTED_FIELD_TYPES, validate_schema
 
 # Load `.env` from the process working directory (walks up parent dirs). After clone, run
 # `./scripts/init-local-env.sh` once from the repo root, then edit `.env`.
 load_dotenv(override=False)
-
-DEFAULT_MODEL = "gpt-4o-mini"
 
 
 class AISchemaError(Exception):
@@ -32,7 +29,7 @@ class AISchemaError(Exception):
 def _system_prompt() -> str:
     types = ", ".join(sorted(SUPPORTED_FIELD_TYPES))
     return (
-        "You are a schema designer for a small synthetic tabular data tool.\n\n"
+        "You are a schema designer for a synthetic tabular data tool.\n\n"
         "Your task: given a user description, output ONLY a schema — not data rows, not CSV, "
         "not explanations.\n\n"
         "Rules:\n"
@@ -105,54 +102,33 @@ def _normalize_to_column_schema(raw: Any) -> dict[str, Any]:
     )
 
 
-def _default_client() -> OpenAI:
-    key = (os.environ.get("OPENAI_API_KEY") or "").strip()
-    if not key:
-        raise AISchemaError(
-            "OPENAI_API_KEY is not set. Export it in your environment or use a .env file "
-            "(see .env.example)."
-        )
-    return OpenAI(api_key=key)
-
-
 def generate_schema_from_prompt(
     prompt: str,
+    provider: str = "gemini",
     model: str | None = None,
     *,
-    client: Any | None = None,
+    _provider: AIProvider | None = None,
 ) -> dict[str, Any]:
     """
-    Call OpenAI to produce a column schema from natural language, then validate it.
+    Ask an LLM to propose a column schema from natural language, then validate it.
 
     Returns a flat ``dict`` mapping column names to field specs (same shape as
-    ``generate_dataset`` expects). Does not generate dataset rows.
+    ``generate_dataset``). Does not generate dataset rows.
 
-    ``client`` may be injected for tests; otherwise ``OPENAI_API_KEY`` must be set.
+    ``provider`` must be ``\"gemini\"`` or ``\"openai\"``. Default is ``\"gemini\"``.
+
+    ``_provider`` may be injected in tests (implements ``generate_text``).
     """
     if not (prompt or "").strip():
         raise AISchemaError("prompt must be a non-empty string.")
 
-    resolved_model = (model or os.environ.get("OPENAI_MODEL") or DEFAULT_MODEL).strip()
-    api_client = client if client is not None else _default_client()
-
     try:
-        response = api_client.chat.completions.create(
-            model=resolved_model,
-            temperature=0.2,
-            messages=[
-                {"role": "system", "content": _system_prompt()},
-                {"role": "user", "content": prompt.strip()},
-            ],
-        )
-    except Exception as exc:
-        raise AISchemaError(f"OpenAI API request failed: {exc}") from exc
+        impl = _provider if _provider is not None else get_provider(provider, model)
+        raw_text = impl.generate_text(_system_prompt(), prompt)
+    except ProviderError as exc:
+        raise AISchemaError(str(exc)) from exc
 
-    choice = response.choices[0] if response.choices else None
-    content = getattr(getattr(choice, "message", None), "content", None)
-    if content is None or not str(content).strip():
-        raise AISchemaError("Model returned no usable text content.")
-
-    raw = _parse_schema_payload(str(content))
+    raw = _parse_schema_payload(raw_text)
     schema = _normalize_to_column_schema(raw)
     try:
         validate_schema(schema)
