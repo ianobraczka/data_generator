@@ -6,3 +6,4 @@ venv/
 *.egg-info/
 .ipynb_checkpoints/
 .env
+examples/generated/

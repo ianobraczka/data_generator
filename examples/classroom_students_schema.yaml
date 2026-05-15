@@ -1,0 +1,29 @@
+# Example schema: student registration + classroom (two entities in one denormalized row).
+# Use `ai-schema` with your own prompt when OPENAI_API_KEY is set; this file matches a typical layout.
+fields:
+  student_id:
+    type: int
+    min: 10000
+    max: 99999
+  student_name:
+    type: name
+  student_email:
+    type: email
+  enrollment_date:
+    type: date
+    min: "2023-01-01"
+    max: "2025-12-31"
+  classroom_id:
+    type: int
+    min: 1
+    max: 99
+  classroom_name:
+    type: choice
+    values: ["Room 101", "Room 102", "Lab A", "Auditorium"]
+  building:
+    type: choice
+    values: ["North Wing", "South Wing", "Main"]
+  capacity:
+    type: int
+    min: 18
+    max: 45

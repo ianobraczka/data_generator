@@ -2,7 +2,7 @@
 
 Generate synthetic pandas datasets from simple Python or YAML schemas, with support for weighted choices, reproducible seeds, and CSV/JSON export.
 
-This is a small, educational project: plain functions, minimal dependencies, and no heavy framework beyond pandas, NumPy, Faker, PyYAML, and the OpenAI Python client (for the optional AI schema helper).
+This is an educational project: plain functions, minimal dependencies, and no heavy framework beyond pandas, NumPy, Faker, PyYAML, and the OpenAI Python client (for the optional AI schema helper).
 
 ## Installation
 
