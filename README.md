@@ -8,13 +8,13 @@ This is an educational project: plain functions, minimal dependencies, and no he
 
 1. **Clone** the repository and enter its root (the directory that contains `requirements.txt` and the `data_generator/` package folder).
 
-2. **Create your personal `.env`** (this file is **gitignored**; it never ships with the clone):
+2. **Create a local `.env` file** (gitignored; not part of the repository):
 
    ```bash
    ./scripts/init-local-env.sh
    ```
 
-   Then open **`.env`** and set **`GEMINI_API_KEY`** (default provider) and/or **`OPENAI_API_KEY`**. On Windows without `sh`, copy manually: `cp .env.example .env` (Git Bash / WSL) or duplicate `.env.example` as `.env` in Explorer and edit.
+   Edit **`.env`** and set **`GEMINI_API_KEY`** (default provider) and/or **`OPENAI_API_KEY`**. On Windows without `sh`, copy the template manually, for example `cp .env.example .env` (Git Bash / WSL), or duplicate `.env.example` as `.env` in the file manager and edit it.
 
 3. **Install dependencies** (virtual environment recommended):
 
@@ -24,24 +24,24 @@ This is an educational project: plain functions, minimal dependencies, and no he
    pip install -r requirements-dev.txt   # optional: for pytest
    ```
 
-4. **Run the CLI from the repo root** (or from any subdirectory of the repo). **python-dotenv** searches upward from the current working directory for a `.env` file, so keeping the file at the repo root matches a normal `git clone` workflow.
+4. **Run the CLI from the repository root** (or from any subdirectory under it). **python-dotenv** walks up from the process working directory to find `.env`; placing `.env` at the repository root matches the usual `git clone` layout.
 
 ## AI-assisted schema generation
 
 AI is used to assist with **schema creation**, while **dataset generation remains deterministic, validated, and reproducible** (`generate_dataset` fills rows; models never emit the final dataset).
 
-**Providers:** **`gemini`** (default, recommended for hobby use with Google’s free tier) and **`openai`** (optional if you already have OpenAI API access). Install SDKs once:
+**Providers:** **`gemini`** (default; suitable for hobby projects on Google’s free tier) and **`openai`** (optional; requires an OpenAI API key and account terms as applicable). Install SDKs once:
 
 ```bash
 pip install -r requirements-ai.txt
 ```
 
-**Configuration:** use **Clone and local setup** so `.env` exists, then set **`GEMINI_API_KEY`** and/or **`OPENAI_API_KEY`**. Optional env vars: **`GEMINI_MODEL`**, **`OPENAI_MODEL`**. Shell exports override `.env` values.
+**Configuration:** after **Clone and local setup**, set **`GEMINI_API_KEY`** and/or **`OPENAI_API_KEY`** in `.env`. Optional environment variables: **`GEMINI_MODEL`**, **`OPENAI_MODEL`**. Values exported in the shell override entries in `.env`.
 
 **Gemini example — draft a schema, then generate rows:**
 
 ```bash
-export GEMINI_API_KEY="your-gemini-api-key"
+export GEMINI_API_KEY="<paste-key-here>"
 
 python -m data_generator ai-schema \
   --provider gemini \
@@ -58,7 +58,7 @@ python -m data_generator generate \
 **OpenAI example:**
 
 ```bash
-export OPENAI_API_KEY="your-openai-api-key"
+export OPENAI_API_KEY="<paste-key-here>"
 
 python -m data_generator ai-schema \
   --provider openai \
@@ -67,7 +67,7 @@ python -m data_generator ai-schema \
   --output examples/orders.yaml
 ```
 
-The CLI defaults to **`--provider gemini`**. Use **`--model`** to override the model for the active provider (otherwise `GEMINI_MODEL` / `OPENAI_MODEL` or built-in defaults apply).
+The CLI defaults to **`--provider gemini`**. **`--model`** overrides the model for the active provider; otherwise `GEMINI_MODEL` / `OPENAI_MODEL` or the built-in defaults apply.
 
 **Supported field types** for AI output match the rest of the tool: `int`, `float`, `choice`, `weighted_choice`, `name`, `email`, `boolean`, `date`. Parsed output is validated with `validate_schema`; bad types or constraints produce clear errors (no automatic repair or retry loops).
 
